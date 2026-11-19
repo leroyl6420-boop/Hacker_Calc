@@ -1,5 +1,5 @@
 # Hacker_Calc
-A basic calculator made from a perfboard, RP2040, and buttons!
+A basic calculator made from a perfboard, Waveshare RP2040 Zero, and buttons!
 
 The OLED is for displaying what you wrote and the answer (duh), the buttons execute actions, and the switches set the operation.
 
@@ -28,3 +28,4 @@ Here is the wiring diagram:
 | 28    |           |          |                 |
 | 29    |           |          |                 |
 
+Here's a photo of the CAD! I'll code it and actually make it after I ship this cuz I wanna contribute to the 500h by Nov 18 :P
