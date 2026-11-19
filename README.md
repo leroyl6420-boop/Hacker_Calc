@@ -30,4 +30,4 @@ Here is the wiring diagram:
 
 Here's a photo of the CAD! I'll code it and actually make it after I ship this cuz I wanna contribute to the 500h by Nov 18 :P
 
-![A CAD of the HackerCalc](Assets/CAD.png)
+![A CAD of the HackerCalc](Assets/%20CAD.png)
