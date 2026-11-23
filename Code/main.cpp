@@ -53,10 +53,10 @@ int main() {
     int numberValue = 0;
     char text[20];
     bool displayChange = true;
-    int a = gpio_get(SWTLA);
-    int b = gpio_get(SWTRA);
-    int c = gpio_get(SWBLA);
-    int d = gpio_get(SWBRA);
+    int a = 0;
+    int b = 0;
+    int c = 0;
+    int d = 0;
     int lastA = 0;
     int lastB = 0;
     int lastC = 0;
@@ -65,6 +65,18 @@ int main() {
     bool bChange = false;
     bool cChange = false;
     bool dChange = false;
+    bool execute = false;
+
+    int partition1 = -1;
+    int partition2 = -1;
+    int partition3 = -1;
+    int partition4 = -1;
+    int partition5 = -1;
+    int number1 = 0;
+    int number2 = 0;
+    int number3 = 0;
+    int number4 = 0;
+    int number5 = 0;
 
     gpio_init(BUTTONBR);
     gpio_init(BUTTONBL);
@@ -113,6 +125,15 @@ int main() {
     gpio_pull_up(SDA);
 
     ssd1306_init(i2c0, OLED_ADDR);
+
+    a = gpio_get(SWTLA);
+    b = gpio_get(SWTRA);
+    c = gpio_get(SWBLA);
+    d = gpio_get(SWBRA);
+    lastA = a;
+    lastB = b;
+    lastC = c;
+    lastD = d;
 
     while (true) {
 
@@ -179,6 +200,7 @@ int main() {
 
         // Button Inputs
         
+        //Number Input: Morse Code
         int reading1 = gpio_get(BUTTONTL);
         if (reading1 != lastReading1) {
             lastChange1 = time_us_64() / 1000;
@@ -202,6 +224,7 @@ int main() {
         }
         lastReading1 = reading1;
 
+        //Operation Input
         int reading2 = gpio_get(BUTTONTR);
         if (reading2 != lastReading2) {
             lastChange2 = time_us_64() / 1000;
@@ -277,16 +300,21 @@ int main() {
         }
         lastReading2 = reading2;
 
+        //Execution
         int reading3 = gpio_get(BUTTONBL);
         if (reading3 != lastReading3) {
             lastChange3 = time_us_64() / 1000;
         }
         if (time_us_64() / 1000 - lastChange3 > DEBOUNCE && reading3 != buttonState3) {
             buttonState3 = reading3;
-            // Put Results Here!
+            if (buttonState3 == 0) {
+                execute = true;
+                displayChange = true;
+            }
         }
         lastReading3 = reading3;
 
+        //Clearing
         int reading4 = gpio_get(BUTTONBR);
         if (reading4 != lastReading4) {
             lastChange4 = time_us_64() / 1000;
@@ -401,60 +429,187 @@ int main() {
             }
         }
 
-        //Computation
+        //Execution
+
+        if (execute == true) {
+
+            //Determining Locations of Partitions/Operations
+
+            partition1 = -1;
+            partition2 = -1;
+            partition3 = -1;
+            partition4 = -1;
+            partition5 = -1;
+            number1 = 0;
+            number2 = 0;
+            number3 = 0;
+            number4 = 0;
+            number5 = 0;
+            for (int i = 0; i < numberValue; i++) {
+                if (number[i] == 10) {
+                    if (partition1 == -1) {
+                        partition1 = i;
+                    }
+                    else if (partition2 == -1) {
+                        partition2 = i;
+                    }
+                    else if (partition3 == -1) {
+                        partition3 = i;
+                    }
+                    else if (partition4 == -1) {
+                        partition4 = i;
+                    }
+                    else {
+                        partition5 = i;
+                    }
+                }
+                else {
+                    //Nothing just move on ;D
+                }
+            }
+
+            //Determining Individual Numbers
+
+            if (partition1 != -1) {
+                for (int i = 0; i < partition1; i += 1) {
+                    number1 = number1 * 10 + number[i];
+                }
+            }
+            if (partition2 != -1) {
+                for (int i = partition1 + 1; i < partition2; i += 1) {
+                    number2 = number2 * 10 + number[i];
+                }
+            }
+            if (partition3 != -1) {
+                for (int i = partition2 + 1; i < partition3; i += 1) {
+                    number3 = number3 * 10 + number[i]; 
+                }
+            }
+            if (partition4 != -1) {
+                for (int i = partition3 + 1; i < partition4; i += 1) {
+                    number4 = number4 * 10 + number[i];
+                }
+            }
+            if (partition5 != -1) {
+                for (int i = partition4 + 1; i < partition5; i += 1) {
+                    number5 = number5 * 10 + number[i];
+                }
+            }
+            //Number After Final Partition/Operation
+            int start = 0;
+            if (partition5 != -1) {
+                start = partition5 + 1;
+            }
+            else if (partition4 != -1) {
+                start = partition4 + 1;
+            }
+            else if (partition3 != -1) {
+                start = partition3 + 1;
+            }
+            else if (partition2 != -1) {
+                start = partition2 + 1;
+            }
+            else if (partition1 != -1) {
+                start = partition1 + 1;
+            }
+
+            if (partition1 == -1) {
+                for (int i = start; i < numberValue; i++) {
+                    number1 = number1 * 10 + number[i];
+                }
+            }
+            else if (partition2 == -1) {
+                for (int i = start; i < numberValue; i++) {
+                    number2 = number2 * 10 + number[i];
+                }
+            }
+            else if (partition3 == -1) {
+                for (int i = start; i < numberValue; i++) {
+                    number3 = number3 * 10 + number[i];
+                }
+            }
+            else if (partition4 == -1) {
+                for (int i = start; i < numberValue; i++) {
+                    number4 = number4 * 10 + number[i];
+                }
+            }
+            else if (partition5 == -1) {
+                for (int i = start; i < numberValue; i++) {
+                    number5 = number5 * 10 + number[i];
+                }
+            }
+
+        }
 
         //Display
 
         if (displayChange == true) {
             ssd1306_clear();
 
-            //Number/Operation Display
+            if (execute != true) {
+                //Number/Operation Display
 
-            for (int i = 0; i < numberValue; i++) {
-                if (number[i] != 10) {
-                    snprintf(text, sizeof(text), "%d", number[i]);
-                    ssd1306_text(i * 10, 0, text);
-                }
-                else {
-                    if (operation[i] == 1) {
-                        ssd1306_text(i * 10, 0, "TLA");
-                    }
-                    if (operation[i] == 2) {
-                        ssd1306_text(i * 10, 0, "TLB");
-                    }
-                    if (operation[i] == 3) {
-                        ssd1306_text(i * 10, 0, "TRA");
-                    }
-                    if (operation[i] == 4) {
-                        ssd1306_text(i * 10, 0, "TRB");
-                    }
-                    if (operation[i] == 5) {
-                        ssd1306_text(i * 10, 0, "BLA");
-                    }
-                    if (operation[i] == 6) {
-                        ssd1306_text(i * 10, 0, "BLB");
+                for (int i = 0; i < numberValue; i++) {
+                    if (number[i] != 10) {
+                        snprintf(text, sizeof(text), "%d", number[i]);
+                        ssd1306_text(i * 10, 0, text);
                     }
                     else {
-                        //Add move on and execute signals here!
+                        if (operation[i] == 1) {
+                            ssd1306_text(i * 10, 0, "+");
+                        }
+                        if (operation[i] == 2) {
+                            ssd1306_text(i * 10, 0, "X");
+                        }
+                        if (operation[i] == 3) {
+                            ssd1306_text(i * 10, 0, "P");
+                        }
+                        if (operation[i] == 4) {
+                            ssd1306_text(i * 10, 0, "R");
+                        }
+                        if (operation[i] == 5) {
+                            ssd1306_text(i * 10, 0, "-");
+                        }
+                        if (operation[i] == 6) {
+                            ssd1306_text(i * 10, 0, "/");
+                        }
+                        else {
+                            //Add move on and execute signals here!
+                        }
+                    }
+                }
+
+                //Morse Display
+
+                for (int i = 0; i < morseValue; i++) {
+                    if (morse[i] == 1) {
+                        ssd1306_text(i * 10, 50, "-");
+                    }
+                    if (morse[i] == 0) {
+                        ssd1306_text(i * 10, 50, ".");
                     }
                 }
             }
-
-            //Morse Display
-
-            for (int i = 0; i < morseValue; i++) {
-                if (morse[i] == 1) {
-                    ssd1306_text(i * 10, 50, "-");
-                }
-                if (morse[i] == 0) {
-                    ssd1306_text(i * 10, 50, ".");
-                }
+            else {
+                snprintf(text, sizeof(text), "%d", number1);
+                ssd1306_text(0, 0, text);
+                snprintf(text, sizeof(text), "%d", number2);
+                ssd1306_text(0, 10, text);
+                snprintf(text, sizeof(text), "%d", number3);
+                ssd1306_text(0, 20, text);
+                snprintf(text, sizeof(text), "%d", number4);
+                ssd1306_text(0, 30, text);
+                snprintf(text, sizeof(text), "%d", number5);
+                ssd1306_text(0, 40, text);
+                ssd1306_show(i2c0, OLED_ADDR);
+                sleep_ms(2000);
             }
 
             ssd1306_show(i2c0, OLED_ADDR);
         }
 
         displayChange = false;
+        execute = false;
 
     }
 }
