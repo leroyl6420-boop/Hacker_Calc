@@ -47,9 +47,9 @@ int main() {
     int morseValue = 0;
 
     //Variables
-    int operation[10];
+    int operation[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
     int operationValue = 0;
-    int number[10];
+    int number[10] = {10, 10, 10, 10, 10, 10, 10, 10, 10, 10};
     int numberValue = 0;
     char text[20];
     bool displayChange = true;
@@ -67,16 +67,10 @@ int main() {
     bool dChange = false;
     bool execute = false;
 
-    int partition1 = -1;
-    int partition2 = -1;
-    int partition3 = -1;
-    int partition4 = -1;
-    int partition5 = -1;
-    int number1 = 0;
-    int number2 = 0;
-    int number3 = 0;
-    int number4 = 0;
-    int number5 = 0;
+    int value[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    int valuevalue = 0;
+    int symbol[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+    int symbolvalue = 0;
 
     gpio_init(BUTTONBR);
     gpio_init(BUTTONBL);
@@ -310,7 +304,7 @@ int main() {
             if (buttonState3 == 0) {
                 execute = true;
                 displayChange = true;
-            }
+            } 
         }
         lastReading3 = reading3;
 
@@ -330,6 +324,10 @@ int main() {
                     morseValue = 0;
                     numberValue = 0;
                     operationValue = 0;
+                    for (int i = 0; i < 10; i++) {
+                        number[i] = 10;
+                        operation[i] = 0;
+                    }
                     displayChange = true;
                 }
                 else {
@@ -433,109 +431,104 @@ int main() {
 
         if (execute == true) {
 
-            //Determining Locations of Partitions/Operations
+            // DETERMINING WHAT THE NUMBERS BETWEEN THE OPERATIONS ARE
 
-            partition1 = -1;
-            partition2 = -1;
-            partition3 = -1;
-            partition4 = -1;
-            partition5 = -1;
-            number1 = 0;
-            number2 = 0;
-            number3 = 0;
-            number4 = 0;
-            number5 = 0;
+            valuevalue = 0;
+            for (int i = 0; i < 10; i++) {
+                value[i] = 0;
+            }
             for (int i = 0; i < numberValue; i++) {
                 if (number[i] == 10) {
-                    if (partition1 == -1) {
-                        partition1 = i;
-                    }
-                    else if (partition2 == -1) {
-                        partition2 = i;
-                    }
-                    else if (partition3 == -1) {
-                        partition3 = i;
-                    }
-                    else if (partition4 == -1) {
-                        partition4 = i;
-                    }
-                    else {
-                        partition5 = i;
-                    }
+                    valuevalue += 1;
                 }
                 else {
-                    //Nothing just move on ;D
+                    value[valuevalue] = value[valuevalue] * 10 + number[i];
                 }
             }
 
-            //Determining Individual Numbers
+            // DETERMINING THE OPERATIONS
 
-            if (partition1 != -1) {
-                for (int i = 0; i < partition1; i += 1) {
-                    number1 = number1 * 10 + number[i];
+            symbolvalue = 0;
+            for (int i = 0; i < 10; i++) {
+                symbol[i] = 0;
+            }
+            for (int i = 0; i < operationValue; i++) {
+                if (operation[i] != 0) {
+                    symbol[symbolvalue] = operation[i];
+                    symbolvalue += 1;
                 }
-            }
-            if (partition2 != -1) {
-                for (int i = partition1 + 1; i < partition2; i += 1) {
-                    number2 = number2 * 10 + number[i];
+                else {
+                    //Nothing just skip
                 }
-            }
-            if (partition3 != -1) {
-                for (int i = partition2 + 1; i < partition3; i += 1) {
-                    number3 = number3 * 10 + number[i]; 
-                }
-            }
-            if (partition4 != -1) {
-                for (int i = partition3 + 1; i < partition4; i += 1) {
-                    number4 = number4 * 10 + number[i];
-                }
-            }
-            if (partition5 != -1) {
-                for (int i = partition4 + 1; i < partition5; i += 1) {
-                    number5 = number5 * 10 + number[i];
-                }
-            }
-            //Number After Final Partition/Operation
-            int start = 0;
-            if (partition5 != -1) {
-                start = partition5 + 1;
-            }
-            else if (partition4 != -1) {
-                start = partition4 + 1;
-            }
-            else if (partition3 != -1) {
-                start = partition3 + 1;
-            }
-            else if (partition2 != -1) {
-                start = partition2 + 1;
-            }
-            else if (partition1 != -1) {
-                start = partition1 + 1;
             }
 
-            if (partition1 == -1) {
-                for (int i = start; i < numberValue; i++) {
-                    number1 = number1 * 10 + number[i];
+            // ACTUALLY COMPUTING
+
+            //Multiplication
+            for (int i = 0; i < symbolvalue; i++) {
+                if (symbol[i] == 2) {
+                    value[i] = value[i] * value[i + 1];
+                    for (int x = i + 1; x < valuevalue; x++) {
+                        value[x] = value[x + 1];
+                    }
+                    valuevalue -= 1;
+
+                    for (int x = i; x < symbolvalue - 1; x++) {
+                        symbol[x] = symbol[x + 1];
+                    }
+                    symbolvalue -= 1;
+                    i -= 1;
                 }
             }
-            else if (partition2 == -1) {
-                for (int i = start; i < numberValue; i++) {
-                    number2 = number2 * 10 + number[i];
+
+            //Division
+            for (int i = 0; i < symbolvalue; i++) {
+                if (symbol[i] == 6) {
+                    value[i] = value[i] / value[i + 1];
+                    for (int x = i + 1; x < valuevalue; x++) {
+                        value[x] = value[x + 1];
+                    }
+                    valuevalue -= 1;
+
+                    for (int x = i; x < symbolvalue - 1; x++) {
+                        symbol[x] = symbol[x + 1];
+                    }
+                    symbolvalue -= 1;
+                    i -= 1;
                 }
             }
-            else if (partition3 == -1) {
-                for (int i = start; i < numberValue; i++) {
-                    number3 = number3 * 10 + number[i];
+
+            //Addition
+            for (int i = 0; i < symbolvalue; i++) {
+                if (symbol[i] == 1) {
+                    value[i] = value[i] + value[i + 1];
+                    for (int x = i + 1; x < valuevalue; x++) {
+                        value[x] = value[x + 1];
+                    }
+                    valuevalue -= 1;
+
+                    for (int x = i; x < symbolvalue - 1; x++) {
+                        symbol[x] = symbol[x + 1];
+                    }
+                    symbolvalue -= 1;
+                    i -= 1;
                 }
             }
-            else if (partition4 == -1) {
-                for (int i = start; i < numberValue; i++) {
-                    number4 = number4 * 10 + number[i];
-                }
-            }
-            else if (partition5 == -1) {
-                for (int i = start; i < numberValue; i++) {
-                    number5 = number5 * 10 + number[i];
+
+            //Subtraction
+            for (int i = 0; i < symbolvalue; i++) {
+                if (symbol[i] == 5) {
+                    value[i] = value[i] - value[i + 1];
+                    for (int x = i + 1; x < valuevalue; x++) {
+                        value[x] = value[x + 1];
+                    }
+                    valuevalue -= 1;
+
+                    for (int x = i; x < symbolvalue - 1; x++) {
+                        symbol[x] = symbol[x + 1];
+                    }
+                    symbolvalue -= 1;
+                    i -= 1;
                 }
             }
 
@@ -546,63 +539,52 @@ int main() {
         if (displayChange == true) {
             ssd1306_clear();
 
-            if (execute != true) {
-                //Number/Operation Display
+            //Number/Operation Display
 
-                for (int i = 0; i < numberValue; i++) {
-                    if (number[i] != 10) {
-                        snprintf(text, sizeof(text), "%d", number[i]);
-                        ssd1306_text(i * 10, 0, text);
+            for (int i = 0; i < numberValue; i++) {
+                if (number[i] != 10) {
+                    snprintf(text, sizeof(text), "%d", number[i]);
+                    ssd1306_text(i * 10, 20, text);
+                }
+                else {
+                    if (operation[i] == 1) {
+                        ssd1306_text(i * 10, 20, "+");
+                    }
+                    if (operation[i] == 2) {
+                        ssd1306_text(i * 10, 20, "X");
+                    }
+                    if (operation[i] == 3) {
+                        ssd1306_text(i * 10, 20, "P");
+                    }
+                    if (operation[i] == 4) {
+                        ssd1306_text(i * 10, 20, "R");
+                    }
+                    if (operation[i] == 5) {
+                        ssd1306_text(i * 10, 20, "-");
+                    }
+                    if (operation[i] == 6) {
+                        ssd1306_text(i * 10, 20, "/");
                     }
                     else {
-                        if (operation[i] == 1) {
-                            ssd1306_text(i * 10, 0, "+");
-                        }
-                        if (operation[i] == 2) {
-                            ssd1306_text(i * 10, 0, "X");
-                        }
-                        if (operation[i] == 3) {
-                            ssd1306_text(i * 10, 0, "P");
-                        }
-                        if (operation[i] == 4) {
-                            ssd1306_text(i * 10, 0, "R");
-                        }
-                        if (operation[i] == 5) {
-                            ssd1306_text(i * 10, 0, "-");
-                        }
-                        if (operation[i] == 6) {
-                            ssd1306_text(i * 10, 0, "/");
-                        }
-                        else {
-                            //Add move on and execute signals here!
-                        }
-                    }
-                }
-
-                //Morse Display
-
-                for (int i = 0; i < morseValue; i++) {
-                    if (morse[i] == 1) {
-                        ssd1306_text(i * 10, 50, "-");
-                    }
-                    if (morse[i] == 0) {
-                        ssd1306_text(i * 10, 50, ".");
+                        //Add move on and execute signals here!
                     }
                 }
             }
-            else {
-                snprintf(text, sizeof(text), "%d", number1);
-                ssd1306_text(0, 0, text);
-                snprintf(text, sizeof(text), "%d", number2);
-                ssd1306_text(0, 10, text);
-                snprintf(text, sizeof(text), "%d", number3);
-                ssd1306_text(0, 20, text);
-                snprintf(text, sizeof(text), "%d", number4);
-                ssd1306_text(0, 30, text);
-                snprintf(text, sizeof(text), "%d", number5);
-                ssd1306_text(0, 40, text);
-                ssd1306_show(i2c0, OLED_ADDR);
-                sleep_ms(2000);
+
+            //Morse Display
+
+            for (int i = 0; i < morseValue; i++) {
+                if (morse[i] == 1) {
+                    ssd1306_text(i * 10, 50, "-");
+                }
+                if (morse[i] == 0) {
+                    ssd1306_text(i * 10, 50, ".");
+                }
+            }
+
+            for (int i = 0; i <= valuevalue; i++) {
+                snprintf(text, sizeof(text), "%d", value[i]);
+                ssd1306_text(0, i * 10, text);
             }
 
             ssd1306_show(i2c0, OLED_ADDR);
